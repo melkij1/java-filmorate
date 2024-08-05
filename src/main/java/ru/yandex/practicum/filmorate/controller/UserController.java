@@ -32,14 +32,14 @@ public class UserController {
         return user;
     }
 
-    @PutMapping("/{id}")
-    public User updateUser(@PathVariable int id, @Valid @RequestBody User user) {
+    @PutMapping()
+    public User updateUser(@Valid @RequestBody User user) {
+        int id = user.getId();
         if (!users.containsKey(id)) {
             log.debug("Пользователь {} не найден", user);
             throw new ValidationException("Пользователь не найден");
         }
         validateUser(user);
-        user.setId(id);
         users.put(id, user);
         return user;
     }

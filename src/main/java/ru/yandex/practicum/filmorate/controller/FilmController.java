@@ -31,14 +31,13 @@ public class FilmController {
         return film;
     }
 
-    @PutMapping(value = "/{id}")
-    public Film updateFilm(@PathVariable int id, @Valid @RequestBody Film film) {
-        System.out.println(id);
+    @PutMapping()
+    public Film updateFilm(@Valid @RequestBody Film film) {
+        int id = film.getId();
         if (!films.containsKey(id)) {
             log.debug("Фильм с id {} не найден", id);
             throw  new ValidationException("Фильм не найден");
         }
-        film.setId(id);
         films.put(id, film);
         log.debug("Фильм под название {} изменен", film.getName());
         return film;
