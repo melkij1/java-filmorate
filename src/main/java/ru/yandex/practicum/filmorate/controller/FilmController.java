@@ -31,7 +31,7 @@ public class FilmController {
         return film;
     }
 
-    @PutMapping()
+    @PutMapping
     public Film updateFilm(@Valid @RequestBody Film film) {
         int id = film.getId();
         if (!films.containsKey(id)) {
