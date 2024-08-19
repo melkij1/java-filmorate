@@ -7,7 +7,7 @@ import ru.yandex.practicum.filmorate.model.User;
 import java.util.*;
 
 @Component
-public class InMemoryUserStorage implements UserStorage{
+public class InMemoryUserStorage implements UserStorage {
     private static int generatedId = 0;
     private final Map<Integer, User> users = new HashMap<>();
 
@@ -27,7 +27,7 @@ public class InMemoryUserStorage implements UserStorage{
     @Override
     public User update(User user) {
         int id = user.getId();
-        if(!users.containsKey(id)){
+        if (!users.containsKey(id)) {
             throw new UserNotFoundException("Пользователь не найден");
         }
         users.put(id, user);

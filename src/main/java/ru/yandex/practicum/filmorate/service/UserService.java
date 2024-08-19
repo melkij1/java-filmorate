@@ -34,7 +34,7 @@ public class UserService {
     }
 
     public void addFriend(int userId, int friendId) {
-        if (userId < 0 || friendId < 0){
+        if (userId < 0 || friendId < 0) {
             throw new UserNotFoundException("Пользователь не найден");
         }
         findById(userId).getFriends().add(friendId);
