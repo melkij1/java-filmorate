@@ -35,7 +35,7 @@ public class FilmService {
     }
 
     public void addLike(int filmId, int userId) {
-        if (!findById(filmId).getLikes().contains(userId)) {
+        if (findById(filmId).getLikes().contains(userId)) {
             throw new UserNotFoundException("Пользователь уже поставил лайк");
         }
         findById(filmId).getLikes().add(userId);
@@ -53,6 +53,11 @@ public class FilmService {
     }
 
     public List<Film> findPopular(int count) {
+
+        if (count <= 0) {
+            throw new ValidationException("Количество фильмов должно быть больше 0");
+        }
+
         return filmStorage.findAll().stream()
                 .sorted((film1, film2) -> Integer.compare(film2.getLikes().size(),film1.getLikes().size()))
                 .limit(count)
