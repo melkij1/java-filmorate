@@ -35,10 +35,17 @@ public class FilmService {
     }
 
     public void addLike(int filmId, int userId) {
-        if (findById(filmId).getLikes().contains(userId)) {
+        Optional<Film> film = filmStorage.findById(filmId);
+        Optional<User> user = userStorage.findById(userId);
+        if (film.isEmpty()) {
+            throw new FilmNotFoundException("Не найден фильм, у которого устанавливается лайк");
+        } else if (user.isEmpty()) {
+            throw new UserNotFoundException("Не найден пользователь, чей устанавливается лайк");
+        } else if (findById(filmId).getLikes().contains(userId)) {
             throw new UserNotFoundException("Пользователь уже поставил лайк");
+        } else {
+            findById(filmId).getLikes().add(userId);
         }
-        findById(filmId).getLikes().add(userId);
     }
 
     public void removeLike(int filmId, int userId) {
