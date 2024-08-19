@@ -24,32 +24,32 @@ public class FilmController {
 
     @GetMapping("/popular")
     public List<Film> findPopular(@RequestParam(defaultValue = "10") @Positive int count) {
-        log.debug("Популярные фильмы");
+        log.info("Популярные фильмы");
         return filmService.findPopular(count);
     }
 
     @PostMapping
     public Film createFilm(@Valid @RequestBody Film film) {
-        log.debug("Фильм под название {} создан", film.getName());
+        log.info("Фильм под название {} создан", film.getName());
         return filmService.create(film);
     }
 
     @PutMapping
     public Film updateFilm(@Valid @RequestBody Film film) {
-        log.debug("Фильм под название {} изменен", film.getName());
+        log.info("Фильм под название {} изменен", film.getName());
         return filmService.update(film);
     }
 
     @PutMapping("/{id}/like/{userId}")
     public void likeFilm(@PathVariable int id, @PathVariable int userId) {
-        log.debug("Пользователь {} поставил лайк фильму {}", userId, id);
+        log.info("Пользователь {} поставил лайк фильму {}", userId, id);
         filmService.addLike(id, userId);
     }
 
     @DeleteMapping("/{id}/like/{userId}")
-    public void unlikeFilm(@PathVariable int id, @PathVariable int userId) {
-        log.debug("Пользователь {} убрал лайк фильму {}", userId, id);
+    public void removeLike(@PathVariable int id, @PathVariable int userId) {
         filmService.removeLike(id, userId);
+        log.info("Пользователь {} убрал лайк фильму {}", userId, id);
     }
 
 
