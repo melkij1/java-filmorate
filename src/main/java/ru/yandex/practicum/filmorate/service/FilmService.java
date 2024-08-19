@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.*;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
@@ -42,22 +43,13 @@ public class FilmService {
 
     public void removeLike(int filmId, int userId) {
         Optional<Film> film = filmStorage.findById(filmId);
+        Optional<User> user = userStorage.findById(userId);
         if (film.isEmpty()) {
             throw new FilmNotFoundException("Не найден фильм, у которого удаляется лайк");
-        } else if (userStorage.findById(userId).isEmpty()) {
+        } else if (user.isEmpty()) {
             throw new UserNotFoundException("Не найден пользователь, чей удаляется лайк");
-        } else if (filmId < 0 || userId < 0) {
-            throw new ValidationException("Некорректный формат переданных параметров");
-        } else {
-            film.get().getLikes().remove(userId);
-        }
-//        final Film film = findById(filmId);
-//        final User user = userService.findById(userId);
-//
-//        if (!film.getLikes().contains(userId)) {
-//            throw new UserNotFoundException("Пользователь не ставил лайк");
-//        }
-//        film.getLikes().remove(userId);
+        } else film.get().getLikes().remove(user.get().getId());
+
     }
 
     public List<Film> findPopular(int count) {
