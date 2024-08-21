@@ -47,14 +47,6 @@ public class ErrorHandler {
         return new ErrorResponse("Произошла внутренняя ошибка сервера");
     }
 
-//    @ExceptionHandler
-//    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-//    public ErrorResponse userNotFoundDeleteException(final UserNotFoundDeleteException e) {
-//        log.error(e.getMessage());
-//        return new ErrorResponse("Не найден пользователь при удалении");
-//    }
-
-
     @ExceptionHandler
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ErrorResponse validateException(final ValidationException e) {
