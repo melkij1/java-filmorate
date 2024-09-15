@@ -47,7 +47,8 @@ WHERE u.id = {userId};
 #### addFriend(Long userId, Long friendId)
 ```sql
 INSERT INTO friendship (user_id, friend_id, status_id)
-VALUE ({userId}, {friend_id}, 2);
+SELECT {userId}, {friend_id}, s.name FROM status AS s
+WHERE s.name = 'not acepted';
 ```
 
 ### 3. Удалить друга
@@ -144,14 +145,17 @@ SELECT f.id,
        f.description,
        f.releaseDate,
        f.duration,
-       r.name AS AMP_Rating
+       r.name AS AMP_Rating,
+       liked_films.likes
 FROM Film AS f
-JOIN mpa_rating AS r ON f.rating_id = r.rating_id;
-JOIN (SELECT fu.film_id AS liked_film_id,
-             COUNT(fu.user_id) AS likes
-      FROM Film_User AS fu
-      GROUP BY fu.film_id
-      ORDER BY likes DESC) AS liked_films ON f.id = liked_films.liked_film_id
+JOIN mpa_rating AS r ON f.rating_id = r.rating_id
+LEFT JOIN (
+    SELECT fu.film_id AS liked_film_id,
+           COUNT(fu.user_id) AS likes
+    FROM Film_User AS fu
+    GROUP BY fu.film_id
+) AS liked_films ON f.id = liked_films.liked_film_id
+ORDER BY liked_films.likes DESC
 LIMIT {count};
 ```
 
