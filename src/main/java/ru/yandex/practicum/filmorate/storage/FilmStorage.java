@@ -13,4 +13,8 @@ public interface FilmStorage {
     Film update(Film film);
 
     Optional<Film> findById(int id);
+
+    List<Film> findPopular(int count);
+
+    Integer findCount(int id);
 }

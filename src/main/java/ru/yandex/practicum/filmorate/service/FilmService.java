@@ -2,41 +2,49 @@ package ru.yandex.practicum.filmorate.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.dao.*;
 import ru.yandex.practicum.filmorate.exception.*;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.FilmStorage;
-import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Service
 public class FilmService {
-    private final FilmStorage filmStorage;
-    private final UserStorage userStorage;
+    private final FilmDbStorage filmDbStorage;
+    private final LikeDbStorage likeDbStorage;
+    private final UserDbStorage userDbStorage;
+    private final RatingDbStorage ratingDbStorage;
+    private final GenreDbStorage genreDbStorage;
 
     public List<Film> findAll() {
-        return filmStorage.findAll();
+        return filmDbStorage.findAll();
     }
 
     public Film findById(int id) {
-        return filmStorage.findById(id).orElseThrow(() -> new FilmNotFoundException("Фильм не найден"));
+        return filmDbStorage.findById(id).orElseThrow(() -> new FilmNotFoundException("Фильм не найден"));
     }
 
     public Film create(Film film) {
-        return filmStorage.create(film);
+        return filmDbStorage.create(film);
     }
 
     public Film update(Film film) {
-        return filmStorage.update(film);
+        Integer filmCount = filmDbStorage.findCount(film.getId());
+        if (filmCount > 0) {
+            return filmDbStorage.update(film);
+        }else{
+            throw new FilmNotFoundException("Фильм не найден");
+        }
     }
 
     public void addLike(int filmId, int userId) {
-        Optional<Film> film = filmStorage.findById(filmId);
-        Optional<User> user = userStorage.findById(userId);
+        Optional<Film> film = filmDbStorage.findById(filmId);
+        Optional<User> user = userDbStorage.findById(userId);
         if (film.isEmpty()) {
             throw new FilmNotFoundException("Не найден фильм, у которого устанавливается лайк");
         } else if (user.isEmpty()) {
@@ -44,18 +52,18 @@ public class FilmService {
         } else if (findById(filmId).getLikes().contains(userId)) {
             throw new UserNotFoundException("Пользователь уже поставил лайк");
         } else {
-            findById(filmId).getLikes().add(userId);
+            likeDbStorage.addLike(filmId, userId);
         }
     }
 
     public void removeLike(int filmId, int userId) {
-        Optional<Film> film = filmStorage.findById(filmId);
-        Optional<User> user = userStorage.findById(userId);
+        Optional<Film> film = filmDbStorage.findById(filmId);
+        Optional<User> user = userDbStorage.findById(userId);
         if (film.isEmpty()) {
             throw new FilmNotFoundException("Не найден фильм, у которого удаляется лайк");
         } else if (user.isEmpty()) {
             throw new UserNotFoundException("Не найден пользователь, чей удаляется лайк");
-        } else film.get().getLikes().remove(user.get().getId());
+        } else likeDbStorage.removeLike(filmId, userId);
 
     }
 
@@ -65,9 +73,22 @@ public class FilmService {
             throw new ValidationException("Количество фильмов должно быть больше 0");
         }
 
-        return filmStorage.findAll().stream()
-                .sorted((film1, film2) -> Integer.compare(film2.getLikes().size(),film1.getLikes().size()))
-                .limit(count)
-                .collect(Collectors.toList());
+        return filmDbStorage.findPopular(count);
     }
+
+    public List<Mpa> findAllRatings() {
+        return ratingDbStorage.findAllRatings();
+    }
+
+    public Optional<Mpa> findRatingById(int id) {
+        return ratingDbStorage.findRatingById(id);
+    }
+
+    public List<Genre> findAllGenres() {
+        return genreDbStorage.findAll();
+    };
+
+    public Optional<Genre> findGenreById(int id) {
+        return genreDbStorage.findById(id);
+    };
 }
