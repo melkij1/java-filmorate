@@ -26,7 +26,7 @@ public class FilmDbStorage implements FilmStorage {
     private final JdbcTemplate jdbcTemplate;
 
     private static final String SELECT_FILMS = "SELECT f.film_id, f.name, f.description, f.releaseDate, f.duration, " +
-            "mpa.rating_id, mpa.name AS mpa_name, mpa.description AS mpa_description " +
+            "mpa.rating_id, mpa.name AS mpa_name " +
             "FROM films AS f " +
             "INNER JOIN mpa_rating AS mpa ON f.rating_id = mpa.rating_id ";
 
@@ -101,7 +101,7 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public Integer findCount(int id) {
-        String sql = "select count(*) from films where user_id =?";
+        String sql = "select count(*) from films where film_id =?";
         return jdbcTemplate.queryForObject(sql, new Object[]{id}, Integer.class);
     }
 
@@ -109,11 +109,11 @@ public class FilmDbStorage implements FilmStorage {
         Integer id = rs.getInt("film_id");
         Film film = Film.builder()
                 .id(id)
-                .name(rs.getString("title"))
+                .name(rs.getString("name"))
                 .description(rs.getString("description"))
                 .releaseDate(rs.getDate("releaseDate").toLocalDate())
                 .duration(rs.getInt("duration"))
-                .mpa(new Mpa(rs.getInt("rating_id"), rs.getString("name"), rs.getString("description")))
+                .mpa(new Mpa(rs.getInt("rating_id"), rs.getString("mpa_name")))
                 .build();
         return film;
 
@@ -122,7 +122,7 @@ public class FilmDbStorage implements FilmStorage {
     private void updateGenres(Set<Genre> genres, int id) {
         jdbcTemplate.update("DELETE FROM film_genres WHERE film_id =?", id);
 
-        if(!genres.isEmpty()){
+        if (!genres.isEmpty()) {
             String sql = "INSERT INTO film_genres (film_id, genre_id) VALUES (?, ?)";
             Genre[] g = genres.toArray(new Genre[genres.size()]);
 

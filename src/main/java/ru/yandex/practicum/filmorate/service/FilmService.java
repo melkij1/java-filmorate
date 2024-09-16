@@ -18,7 +18,7 @@ public class FilmService {
     private final FilmDbStorage filmDbStorage;
     private final LikeDbStorage likeDbStorage;
     private final UserDbStorage userDbStorage;
-    private final RatingDbStorage ratingDbStorage;
+    private final MpaDbStorage ratingDbStorage;
     private final GenreDbStorage genreDbStorage;
 
     public List<Film> findAll() {
@@ -26,10 +26,22 @@ public class FilmService {
     }
 
     public Film findById(int id) {
-        return filmDbStorage.findById(id).orElseThrow(() -> new FilmNotFoundException("Фильм не найден"));
+        Film film = filmDbStorage.findById(id).orElseThrow(() -> new FilmNotFoundException("Фильм не найден"));
+        genreDbStorage.findAllGenresByFilm(List.of(film));
+        return film;
     }
 
     public Film create(Film film) {
+        Optional<Mpa> mpa = ratingDbStorage.findMpaById(film.getMpa().getId());
+        film.getGenres().forEach(genre -> {
+            Optional<Genre> g = genreDbStorage.findById(genre.getId());
+            if (g.isEmpty()) {
+                throw new GenreNotFoundException("Не найден жанр");
+            }
+        });
+        if (mpa.isEmpty()) {
+            throw new MpaNotFoundException("Не найдена оценка");
+        }
         return filmDbStorage.create(film);
     }
 
@@ -37,20 +49,14 @@ public class FilmService {
         Integer filmCount = filmDbStorage.findCount(film.getId());
         if (filmCount > 0) {
             return filmDbStorage.update(film);
-        }else{
+        } else {
             throw new FilmNotFoundException("Фильм не найден");
         }
     }
 
     public void addLike(int filmId, int userId) {
-        Optional<Film> film = filmDbStorage.findById(filmId);
-        Optional<User> user = userDbStorage.findById(userId);
-        if (film.isEmpty()) {
-            throw new FilmNotFoundException("Не найден фильм, у которого устанавливается лайк");
-        } else if (user.isEmpty()) {
-            throw new UserNotFoundException("Не найден пользователь, чей устанавливается лайк");
-        } else if (findById(filmId).getLikes().contains(userId)) {
-            throw new UserNotFoundException("Пользователь уже поставил лайк");
+        if (filmDbStorage.findById(filmId).isEmpty() || userDbStorage.findById(userId).isEmpty()) {
+            throw new ValidationException("Не найден фильм или пользователь");
         } else {
             likeDbStorage.addLike(filmId, userId);
         }
@@ -68,27 +74,37 @@ public class FilmService {
     }
 
     public List<Film> findPopular(int count) {
-
         if (count <= 0) {
             throw new ValidationException("Количество фильмов должно быть больше 0");
         }
-
-        return filmDbStorage.findPopular(count);
+        List<Film> films = filmDbStorage.findPopular(count);
+        genreDbStorage.findAllGenresByFilm(films);
+        return films;
     }
 
-    public List<Mpa> findAllRatings() {
-        return ratingDbStorage.findAllRatings();
+    public List<Mpa> findAllMpa() {
+        return ratingDbStorage.findAllMpa();
     }
 
-    public Optional<Mpa> findRatingById(int id) {
-        return ratingDbStorage.findRatingById(id);
+    public Optional<Mpa> findMpaById(int id) {
+        Optional<Mpa> mpa = ratingDbStorage.findMpaById(id);
+        if (mpa.isPresent()) {
+            return mpa;
+        } else {
+            throw new ValidationException("Не найдена оценка");
+        }
     }
 
     public List<Genre> findAllGenres() {
         return genreDbStorage.findAll();
-    };
+    }
 
     public Optional<Genre> findGenreById(int id) {
-        return genreDbStorage.findById(id);
-    };
+        Optional<Genre> genre = genreDbStorage.findById(id);
+        if (genre.isPresent()) {
+            return genre;
+        } else {
+            throw new ValidationException("Не найден жанр");
+        }
+    }
 }

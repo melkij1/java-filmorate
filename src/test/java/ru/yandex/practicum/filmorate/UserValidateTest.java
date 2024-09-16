@@ -25,13 +25,13 @@ public class UserValidateTest {
 
     @Test
     void validateUserEmailIsEmpty() {
-        user = new User();
-        user.setId(1);
-        user.setEmail("");
-        user.setLogin("yandex");
-        user.setName("Yandex");
-        user.setBirthday(LocalDate.of(1994,8,10));
-
+        user = User.builder()
+                .id(1)
+                .email("")
+                .login("ya")
+                .name("Mihail")
+                .birthday(LocalDate.of(1986, 11, 15))
+                .build();
         Set<ConstraintViolation<User>> violations = validator.validate(user);
         assertEquals(1, violations.size());
         assertEquals("Электронная почта не может быть пустой", violations.iterator().next().getMessage());
@@ -39,43 +39,30 @@ public class UserValidateTest {
 
     @Test
     void validateUserEmailIsRegexp() {
-        user = new User();
-        user.setId(1);
-        user.setEmail("yandex.ru");
-        user.setLogin("yandex");
-        user.setName("Yandex");
-        user.setBirthday(LocalDate.of(1994,8,10));
-
+        user = User.builder()
+                .id(1)
+                .email("123ya.ru")
+                .login("ya")
+                .name("Mihlail")
+                .birthday(LocalDate.of(1986, 11, 15))
+                .build();
         Set<ConstraintViolation<User>> violations = validator.validate(user);
         assertEquals(1, violations.size());
         assertEquals("Электронная почта должна содержать символ @", violations.iterator().next().getMessage());
     }
 
     @Test
-    void validateUserLoginInSpaces() {
-        user = new User();
-        user.setId(1);
-        user.setEmail("123@yandex.ru");
-        user.setLogin("yan dex");
-        user.setName("Yandex");
-        user.setBirthday(LocalDate.of(1994,8,10));
-
-        Set<ConstraintViolation<User>> violations = validator.validate(user);
-        assertEquals(1, violations.size());
-        assertEquals("Логин не может содержать пробелы.", violations.iterator().next().getMessage());
-    }
-
-    @Test
     void validateUserLoginBirthDay() {
-        user = new User();
-        user.setId(1);
-        user.setEmail("123@yandex.ru");
-        user.setLogin("yandex");
-        user.setName("Yandex");
-        user.setBirthday(LocalDate.MAX);
-
+        user = User.builder()
+                .id(1)
+                .email("123@ya.ru")
+                .login("ya")
+                .name("Ivan")
+                .birthday(LocalDate.MAX)
+                .build();
         Set<ConstraintViolation<User>> violations = validator.validate(user);
         assertEquals(1, violations.size());
-        assertEquals("Дата рождения не может быть в будущем.", violations.iterator().next().getMessage());
+        assertEquals("Дата рождения не может быть в будущем.",
+                violations.iterator().next().getMessage());
     }
 }

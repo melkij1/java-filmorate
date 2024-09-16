@@ -24,21 +24,18 @@ name varchar(255) NOT NULL
 );
 
 create table if not exists friendship(
-PRIMARY KEY(user_id, friend_id, status_id),
+PRIMARY KEY(user_id, friend_id),
 user_id int,
 friend_id int,
-status_id int,
 FOREIGN KEY(user_id) REFERENCES users(user_id),
-FOREIGN KEY(friend_id) REFERENCES users(user_id),
-FOREIGN KEY(status_id) REFERENCES status(status_id)
+FOREIGN KEY(friend_id) REFERENCES users(user_id)
 );
 
 
 
 create table if not exists mpa_rating(
 rating_id int auto_increment,
-name varchar(255),
-description varchar(255)
+name varchar(255)
 );
 
 create table if not exists films(

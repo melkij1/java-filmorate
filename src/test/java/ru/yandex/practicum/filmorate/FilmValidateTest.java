@@ -7,6 +7,7 @@ import jakarta.validation.ValidatorFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Mpa;
 
 import java.time.LocalDate;
 import java.util.Set;
@@ -25,13 +26,14 @@ public class FilmValidateTest {
 
     @Test
     void validateFilmName() {
-        film = new Film();
-        film.setId(1);
-        film.setName("");
-        film.setDescription("Описание вашего фильма");
-        film.setReleaseDate(LocalDate.of(2024,12,5));
-        film.setDuration(120);
-
+        film = Film.builder()
+                .id(1)
+                .name("")
+                .description("Описание фильма")
+                .releaseDate(LocalDate.of(2002, 2, 2))
+                .duration(100)
+                .mpa(new Mpa(1, "G"))
+                .build();
         Set<ConstraintViolation<Film>> violations = validator.validate(film);
         assertEquals(1, violations.size());
         assertEquals("Введите название фильма", violations.iterator().next().getMessage());
@@ -39,13 +41,15 @@ public class FilmValidateTest {
 
     @Test
     void validateFildDescription() {
-        film = new Film();
-        film.setId(1);
-        film.setName("Название фильма");
-        film.setDescription("Lorem Ipsum - это текст-\"рыба\", часто используемый в печати и вэб-дизайне. Lorem Ipsum является стандартной \"рыбой\" для текстов на латинице с начала XVI века. В то время некий безымянный печатник создал большую коллекцию размеров и форм шрифтов, используя Lorem Ipsum для распечатки образцов. Lorem Ipsum не только успешно пережил без заметных изменений пять веков, но и перешагнул в электронный дизайн. Его популяризации в новое время послужили публикация листов Letraset с образцами Lorem Ipsum в 60-х годах и, в более недавнее время, программы электронной вёрстки типа Aldus PageMaker, в шаблонах которых используется Lorem Ipsum.");
-        film.setReleaseDate(LocalDate.of(2024,12,5));
-        film.setDuration(120);
-
+        film = Film.builder()
+                .id(1)
+                .name("Film")
+                .description("Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut" +
+                        "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut")
+                .releaseDate(LocalDate.of(2000, 8, 2))
+                .duration(100)
+                .mpa(new Mpa(1, "G"))
+                .build();
         Set<ConstraintViolation<Film>> violations = validator.validate(film);
         assertEquals(1, violations.size());
         assertEquals("Не более 200 символов", violations.iterator().next().getMessage());
@@ -53,29 +57,33 @@ public class FilmValidateTest {
 
     @Test
     void validateFilmReleaseDate() {
-        film = new Film();
-        film.setId(1);
-        film.setName("Название фильма");
-        film.setDescription("Описание вашего фильма");
-        film.setReleaseDate(LocalDate.of(1895,12,27));
-        film.setDuration(120);
-
+        film = Film.builder()
+                .id(1)
+                .name("Film")
+                .description("Описание фильма")
+                .releaseDate(LocalDate.of(1895, 12, 27))
+                .duration(100)
+                .mpa(new Mpa(1, "G"))
+                .build();
         Set<ConstraintViolation<Film>> violations = validator.validate(film);
         assertEquals(1, violations.size());
-        assertEquals("Введите дату релиза фильма не ранее 28 декабря 1895 года.", violations.iterator().next().getMessage());
+        assertEquals("Введите дату релиза фильма не ранее 28 декабря 1895 года.",
+                violations.iterator().next().getMessage());
     }
 
     @Test
     void validateFilmDuration() {
-        film = new Film();
-        film.setId(1);
-        film.setName("Название фильма");
-        film.setDescription("Описание вашего фильма");
-        film.setReleaseDate(LocalDate.of(2024,12,5));
-        film.setDuration(-100);
-
+        film = Film.builder()
+                .id(1)
+                .name("Film")
+                .description("Описание фильма")
+                .releaseDate(LocalDate.of(1895, 12, 29))
+                .duration(-100)
+                .mpa(new Mpa(1, "G"))
+                .build();
         Set<ConstraintViolation<Film>> violations = validator.validate(film);
         assertEquals(1, violations.size());
-        assertEquals("Продолжительность фильма должна быть больше 0", violations.iterator().next().getMessage());
+        assertEquals("Продолжительность фильма должна быть больше 0",
+                violations.iterator().next().getMessage());
     }
 }

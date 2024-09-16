@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.model.Mpa;
-import ru.yandex.practicum.filmorate.storage.RatingStorage;
+import ru.yandex.practicum.filmorate.storage.MpaStorage;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -13,25 +13,24 @@ import java.util.Optional;
 
 @RequiredArgsConstructor
 @Repository
-public class RatingDbStorage implements RatingStorage {
+public class MpaDbStorage implements MpaStorage {
     private final JdbcTemplate jdbcTemplate;
 
     @Override
-    public List<Mpa> findAllRatings() {
+    public List<Mpa> findAllMpa() {
         String sql = "SELECT * FROM mpa_rating";
-        return jdbcTemplate.query(sql, (rs, rowNum) -> makeRating(rs));
+        return jdbcTemplate.query(sql, (rs, rowNum) -> makeMpa(rs));
     }
 
     @Override
-    public Optional<Mpa> findRatingById(int id) {
+    public Optional<Mpa> findMpaById(int id) {
         String sql = "SELECT * FROM mpa_rating WHERE rating_id =?";
-        return jdbcTemplate.query(sql, (rs, rowNum) -> makeRating(rs), id).stream().findFirst();
+        return jdbcTemplate.query(sql, (rs, rowNum) -> makeMpa(rs), id).stream().findFirst();
     }
 
-    private Mpa makeRating(ResultSet rs) throws SQLException {
+    private Mpa makeMpa(ResultSet rs) throws SQLException {
         int id = rs.getInt("rating_id");
         String name = rs.getString("name");
-        String description = rs.getString("description");
-        return new Mpa(id, name, description);
+        return new Mpa(id, name);
     }
 }

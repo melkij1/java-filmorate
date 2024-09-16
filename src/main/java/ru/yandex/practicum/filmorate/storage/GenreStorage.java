@@ -11,5 +11,5 @@ public interface GenreStorage {
 
     Optional<Genre> findById(int id);
 
-    void findAllByFilm(List<Film> films);
+    void findAllGenresByFilm(List<Film> films);
 }

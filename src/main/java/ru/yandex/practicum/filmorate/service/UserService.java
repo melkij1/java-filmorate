@@ -8,9 +8,7 @@ import ru.yandex.practicum.filmorate.exception.UserNotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 @RequiredArgsConstructor
 @Service
@@ -35,52 +33,39 @@ public class UserService {
     public User update(User user) {
         validateUser(user);
         User findUser = findById(user.getId());
-        if(findUser == null) {
+        if (findUser == null) {
             throw new UserNotFoundException("Пользователь не найден");
         }
         return userDbStorage.update(user);
     }
 
     public void addFriend(int userId, int friendId) {
-        Integer user = userDbStorage.findCount(userId);
-        Integer friend = userDbStorage.findCount(friendId);
-        if (user > 0 && friend > 0) {
-            friendDbStorage.addFriend(userId, friendId, 1);
-
-        }else{
-            throw new UserNotFoundException("Пользователь не найден");
+        if (userStorage.findById(userId).isEmpty() || userStorage.findById(friendId).isEmpty()) {
+            throw new UserNotFoundException("Пользователь не найден.");
         }
+        if (userId < 0 || friendId < 0) {
+            throw new UserNotFoundException("Пользователь не найден.");
+        }
+        friendDbStorage.addFriend(userId, friendId);
     }
 
     public void deleteFriend(int userId, int friendId) {
-//        friendDbStorage.removeFriend(userId, friendId);
-        Integer user = userDbStorage.findCount(userId);
-        Integer friend = userDbStorage.findCount(friendId);
-        if (user > 0 && friend > 0) {
-            friendDbStorage.removeFriend(userId, friendId);
-            friendDbStorage.removeFriend(friendId, userId);
-
-        }else{
-            throw new UserNotFoundException("Пользователь не найден");
+        if (userStorage.findById(userId).isEmpty() || userStorage.findById(friendId).isEmpty()) {
+            throw new UserNotFoundException("Пользователь не найден.");
         }
-//        findById(userId).getFriends().remove(friendId);
-//        findById(friendId).getFriends().remove(userId);
+        friendDbStorage.removeFriend(userId, friendId);
     }
 
     public List<User> findAllFriends(int userId) {
         Integer user = userDbStorage.findCount(userId);
         if (user > 0) {
             return friendDbStorage.findAllFriends(userId);
-        }else{
+        } else {
             throw new UserNotFoundException("Пользователь не найден");
         }
     }
 
     public List<User> findCommonFriends(int userId, int friendId) {
-//        List<User> commonFriends = findAllFriends(userId);
-//        List<User> commonFriendsSecond = findAllFriends(friendId);
-//        commonFriends.retainAll(commonFriendsSecond);
-//        return commonFriends;
         return friendDbStorage.findCommonFriends(userId, friendId);
     }
 
