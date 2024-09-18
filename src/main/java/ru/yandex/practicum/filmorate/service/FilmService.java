@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.dao.*;
 import ru.yandex.practicum.filmorate.exception.*;
@@ -14,6 +15,7 @@ import java.util.Optional;
 
 @RequiredArgsConstructor
 @Service
+@Slf4j
 public class FilmService {
     private final FilmDbStorage filmDbStorage;
     private final LikeDbStorage likeDbStorage;
@@ -22,12 +24,15 @@ public class FilmService {
     private final GenreDbStorage genreDbStorage;
 
     public List<Film> findAll() {
-        return filmDbStorage.findAll();
+        List<Film> films = filmDbStorage.findAll();
+        log.debug("Все фильмы: {}", films);
+        return films;
     }
 
     public Film findById(int id) {
         Film film = filmDbStorage.findById(id).orElseThrow(() -> new FilmNotFoundException("Фильм не найден"));
         genreDbStorage.findAllGenresByFilm(List.of(film));
+        log.debug("Фильм: {}", film);
         return film;
     }
 
@@ -42,12 +47,14 @@ public class FilmService {
         if (mpa.isEmpty()) {
             throw new MpaNotFoundException("Не найдена оценка");
         }
+        log.debug("Создание фильма: {}", film);
         return filmDbStorage.create(film);
     }
 
     public Film update(Film film) {
         Integer filmCount = filmDbStorage.findCount(film.getId());
         if (filmCount > 0) {
+            log.debug("Обновление фильма: {}", film);
             return filmDbStorage.update(film);
         } else {
             throw new FilmNotFoundException("Фильм не найден");
@@ -58,6 +65,7 @@ public class FilmService {
         if (filmDbStorage.findById(filmId).isEmpty() || userDbStorage.findById(userId).isEmpty()) {
             throw new ValidationException("Не найден фильм или пользователь");
         } else {
+            log.debug("Добавление лайка к фильму: {}", filmId);
             likeDbStorage.addLike(filmId, userId);
         }
     }
@@ -69,7 +77,10 @@ public class FilmService {
             throw new FilmNotFoundException("Не найден фильм, у которого удаляется лайк");
         } else if (user.isEmpty()) {
             throw new UserNotFoundException("Не найден пользователь, чей удаляется лайк");
-        } else likeDbStorage.removeLike(filmId, userId);
+        } else {
+            log.debug("Удаление лайка к фильму: {}", filmId);
+            likeDbStorage.removeLike(filmId, userId);
+        }
 
     }
 
@@ -79,16 +90,20 @@ public class FilmService {
         }
         List<Film> films = filmDbStorage.findPopular(count);
         genreDbStorage.findAllGenresByFilm(films);
+        log.debug("Популярные фильмы: {}", films);
         return films;
     }
 
     public List<Mpa> findAllMpa() {
-        return ratingDbStorage.findAllMpa();
+        List<Mpa> mpaList = ratingDbStorage.findAllMpa();
+        log.debug("Все оценки: {}", mpaList);
+        return mpaList;
     }
 
     public Optional<Mpa> findMpaById(int id) {
         Optional<Mpa> mpa = ratingDbStorage.findMpaById(id);
         if (mpa.isPresent()) {
+            log.debug("Оценка: {}", mpa);
             return mpa;
         } else {
             throw new ValidationException("Не найдена оценка");
@@ -96,12 +111,15 @@ public class FilmService {
     }
 
     public List<Genre> findAllGenres() {
-        return genreDbStorage.findAll();
+        List<Genre> genres = genreDbStorage.findAll();
+        log.debug("Жанры: {}", genres);
+        return genres;
     }
 
     public Optional<Genre> findGenreById(int id) {
         Optional<Genre> genre = genreDbStorage.findById(id);
         if (genre.isPresent()) {
+            log.debug("Жанр: {}", genre);
             return genre;
         } else {
             throw new ValidationException("Не найден жанр");
