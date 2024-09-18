@@ -1,70 +1,84 @@
 package ru.yandex.practicum.filmorate.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.dao.FriendDbStorage;
+import ru.yandex.practicum.filmorate.dao.UserDbStorage;
 import ru.yandex.practicum.filmorate.exception.UserNotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 @RequiredArgsConstructor
 @Service
+@Slf4j
 public class UserService {
     private final UserStorage userStorage;
+    private final UserDbStorage userDbStorage;
+    private final FriendDbStorage friendDbStorage;
 
     public List<User> findAll() {
-        return userStorage.findAll();
+        List<User> users = userStorage.findAll();
+        log.debug("Пользователи: {}", users);
+        return users;
     }
 
     public User findById(int id) {
-        return userStorage.findById(id).orElseThrow(() -> new UserNotFoundException("Пользователь не найден"));
+        log.debug("Поиск пользователь с id: {}", id);
+        return userDbStorage.findById(id).orElseThrow(() -> new UserNotFoundException("Пользователь не найден"));
     }
 
     public User create(User user) {
         validateUser(user);
-        return userStorage.create(user);
+        log.debug("Создание пользователя: {}", user);
+        return userDbStorage.create(user);
     }
 
     public User update(User user) {
         validateUser(user);
-        return userStorage.update(user);
+        User findUser = findById(user.getId());
+        if (findUser == null) {
+            throw new UserNotFoundException("Пользователь не найден");
+        }
+        log.debug("Обновление пользователя: {}", user);
+        return userDbStorage.update(user);
     }
 
     public void addFriend(int userId, int friendId) {
-        if (userId < 0 || friendId < 0) {
-            throw new UserNotFoundException("Пользователь не найден");
+        if (userStorage.findById(userId).isEmpty() || userStorage.findById(friendId).isEmpty()) {
+            throw new UserNotFoundException("Пользователь не найден.");
         }
-        findById(userId).getFriends().add(friendId);
-        findById(friendId).getFriends().add(userId);
+        if (userId < 0 || friendId < 0) {
+            throw new UserNotFoundException("Пользователь не найден.");
+        }
+        log.debug("Добавление дружбы: {} и {}", userId, friendId);
+        friendDbStorage.addFriend(userId, friendId);
     }
 
     public void deleteFriend(int userId, int friendId) {
-        findById(userId).getFriends().remove(friendId);
-        findById(friendId).getFriends().remove(userId);
+        if (userStorage.findById(userId).isEmpty() || userStorage.findById(friendId).isEmpty()) {
+            throw new UserNotFoundException("Пользователь не найден.");
+        }
+        log.debug("Удаление дружбы: {} и {}", userId, friendId);
+        friendDbStorage.removeFriend(userId, friendId);
     }
 
     public List<User> findAllFriends(int userId) {
-        List<User> friendsList = new ArrayList<>();
-        Set<Integer> friends = findById(userId).getFriends();
-
-        if (friends == null) {
-            return friendsList;
+        Integer user = userDbStorage.findCount(userId);
+        if (user > 0) {
+            log.debug("Поиск всех друзей: {}", userId);
+            return friendDbStorage.findAllFriends(userId);
+        } else {
+            throw new UserNotFoundException("Пользователь не найден");
         }
-
-        for (Integer friendId : friends) {
-            friendsList.add(findById(friendId));
-        }
-        return friendsList;
     }
 
     public List<User> findCommonFriends(int userId, int friendId) {
-        List<User> commonFriends = findAllFriends(userId);
-        List<User> commonFriendsSecond = findAllFriends(friendId);
-        commonFriends.retainAll(commonFriendsSecond);
-        return commonFriends;
+        List<User> friends = friendDbStorage.findCommonFriends(userId, friendId);
+        log.debug("Поиск общих друзей: {}", userId);
+        return friends;
     }
 
     private void validateUser(User user) {

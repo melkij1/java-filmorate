@@ -8,6 +8,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 @Data
+@Builder
 public class User {
     private Integer id;
     @NotBlank(message = "Электронная почта не может быть пустой")

@@ -16,17 +16,6 @@ import java.util.List;
 public class FilmController {
     private final FilmService filmService;
 
-    @GetMapping
-    public List<Film> findAll() {
-        return filmService.findAll();
-    }
-
-    @GetMapping("/popular")
-    public List<Film> findPopular(@RequestParam(defaultValue = "10") int count) {
-        log.info("Популярные фильмы");
-        return filmService.findPopular(count);
-    }
-
     @PostMapping
     public Film createFilm(@Valid @RequestBody Film film) {
         log.info("Фильм под название {} создан", film.getName());
@@ -37,6 +26,24 @@ public class FilmController {
     public Film updateFilm(@Valid @RequestBody Film film) {
         log.info("Фильм под название {} изменен", film.getName());
         return filmService.update(film);
+    }
+
+    @GetMapping
+    public List<Film> findAll() {
+        return filmService.findAll();
+    }
+
+
+    @GetMapping("/{id}")
+    public Film findById(@PathVariable int id) {
+        log.info("Получен фильм с id {}", id);
+        return filmService.findById(id);
+    }
+
+    @GetMapping("/popular")
+    public List<Film> findPopular(@RequestParam(defaultValue = "10") int count) {
+        log.info("Популярные фильмы");
+        return filmService.findPopular(count);
     }
 
     @PutMapping("/{id}/like/{userId}")
